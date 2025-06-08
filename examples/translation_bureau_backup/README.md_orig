@@ -1,0 +1,82 @@
+# Translation Bureau Simulation Example
+
+## Overview
+
+This example simulates a simplified workflow for a translation bureau involving multiple agents and mock tools. It demonstrates how different components (Project Manager, Translator, Quality Assurance) interact to process a translation task. The primary purpose is to showcase a multi-agent workflow within a simulated environment.
+
+## Project Structure
+
+- `main.py`: The main script to run the simulation. It orchestrates the workflow between agents.
+- `apis.py`: Defines a mock `TranslationAPI` used for simulating translation and term validation.
+- `project_manager.py`: Defines the `ProjectManager` agent.
+- `translator.py`: Defines the `Translator` agent.
+- `quality_assurance.py`: Defines the `QualityAssurance` agent.
+- `original_text.py`: Contains sample original texts in English.
+- `translated_text.py`: Contains corresponding mock translated texts (not directly used by `main.py` but serves as a reference for API mock behavior).
+
+## Agents and Roles
+
+### 1. Project Manager (`ProjectManager`)
+- **Role**: Initiates translation projects, assigns tasks to translators, and receives the final status of the translation.
+- **File**: `project_manager.py`
+- **Details**: The `ProjectManager` class takes a name upon initialization. Its `manage_project` method (though simplified in `main.py`) would typically handle the high-level coordination of a translation project.
+
+### 2. Translator (`Translator`)
+- **Role**: Performs the translation of text from a source language to a target language.
+- **File**: `translator.py`
+- **Details**: The `Translator` class is initialized with a name and a list of language pairs it supports (e.g., `[("en", "es")]`). It uses the `TranslationAPI` to perform the `translate_text` operation.
+
+### 3. Quality Assurance (`QualityAssurance`)
+- **Role**: Reviews translated text for accuracy, grammar, style, and adherence to glossaries or specific terminology.
+- **File**: `quality_assurance.py`
+- **Details**: The `QualityAssurance` class takes a name. Its `review_translation` method checks the quality of the translation. In this simulation, it includes mock checks, such as looking for untranslated words or literal translations of idioms. It can also leverage the `TranslationAPI`'s `validate_term` method.
+
+## Tools
+
+### `TranslationAPI`
+- **File**: `apis.py`
+- **Purpose**: Simulates external translation services and glossary/terminology tools.
+- **Methods**:
+    - `__init__()`: Initializes mock translation data (simple string replacements for supported language pairs like en-es, en-fr) and a mock glossary (e.g., `{"es": {"mundo": "Tierra"}}`).
+    - `translate(text, source_language, target_language)`: Simulates translating `text` from `source_language` to `target_language`.
+    - `validate_term(term, language, expected_meaning)`: Simulates validating if a `term` in a given `language` matches an `expected_meaning` based on its internal glossary. The comparison is case-insensitive.
+
+## How to Run the Example
+
+1.  **Navigate to the root directory of the repository.**
+2.  **Set the `PYTHONPATH` environment variable** to include the root directory. This allows Python to correctly locate the modules.
+    ```bash
+    export PYTHONPATH=/path/to/your/repository_root
+    ```
+    If you are running this from within a cloned environment where the root is `/app`, you would use:
+    ```bash
+    export PYTHONPATH=/app
+    ```
+3.  **Execute the `main.py` script**:
+    ```bash
+    python examples/translation_bureau/main.py
+    ```
+
+## Expected Output / Behavior
+
+The `main.py` script simulates a translation workflow. It will print output at each step, indicating the actions taken by each agent.
+
+You can modify `main.py` to test different scenarios:
+
+1.  **Successful Translation and QA:**
+    -   By default (or by setting `text_key_to_translate = "en_greeting"` in `main.py`), the script processes "Hello, world!".
+    -   The `Translator` translates it to Spanish: `[mock-es] Hola, mundo!`.
+    -   The `QualityAssurance` agent performs term validation (e.g., for "mundo") and reviews the translation. Since the mock translation is correct and contains no simulated errors, QA approves it.
+    -   The `ProjectManager` receives a success status.
+    -   Output will show the term validation for "mundo" passing and the QA review passing.
+
+2.  **Translation Rejected by QA:**
+    -   If you change `text_key_to_translate = "en_question"` in `main.py` (for "How are you today?"), the mock Spanish translation is `[mock-es] Cómo estás today?`.
+    -   The `QualityAssurance` agent's `review_translation` method is designed to detect the untranslated "today?" in the Spanish output.
+    -   QA will report a failure.
+    -   The `ProjectManager` receives a status indicating that the translation requires revision.
+    -   Output will show the QA review failing due to the detected error.
+
+The term validation part in `main.py` is currently hardcoded to check the term "mundo" with its expected Spanish glossary definition "Tierra". This validation will pass if "mundo" is in the glossary with that definition, regardless of whether "mundo" is actually in the text being translated. This is a simplification for the example; in a real system, term extraction from the text would be necessary for more relevant validation.
+
+The script demonstrates the flow of control and information between different simulated agents in a translation process.
